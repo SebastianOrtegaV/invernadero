@@ -30,6 +30,11 @@ data class UiState(
     val message: String? = null
 ) {
     val latest: Reading? get() = readings.lastOrNull()
+    val latestTemperature: Float?
+        get() = readings.lastOrNull { it.temperature != null }?.temperature
+
+    val latestHumidity: Float?
+        get() = readings.lastOrNull { it.humidity != null }?.humidity
     /** Consideramos el dispositivo "en linea" si envio datos en los ultimos
     2 minutos. */
     val deviceOnline: Boolean
@@ -93,7 +98,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         lastCommandAt?.let { last ->
             val wait = COMMAND_COOLDOWN_S - Duration.between(last, now).seconds
             if (wait > 0) {
-                _state.update { it.copy(message = "Espera $wait s (límite de ThingSpeak).") }
+                _state.update { it.copy(message = "Espera $wait s.") }
                 return
             }
         }
@@ -103,9 +108,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 val ok = thingSpeak.sendCommand(s.controlWriteKey, fan, water)
                 if (ok) lastCommandAt = Instant.now()
                 _state.update {
-                    if (ok) it.copy(sendingCommand = false, message = "Comando enviado a ThingSpeak.")
+                    if (ok) it.copy(sendingCommand = false, message = "Activando")
                     else it.copy(sendingCommand = false, fanOn = prev.fanOn, waterOn = prev.waterOn,
-                        message = "ThingSpeak rechazó el comando (revisa la Write Key o espera 15 s).")
+                        message = "Comando rechazado (revisa la Write Key o espera 15 s).")
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(sendingCommand = false, fanOn = prev.fanOn, waterOn = prev.waterOn,

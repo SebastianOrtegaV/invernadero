@@ -11,8 +11,7 @@ data class Reading(
 Retrofit. */
 class ThingSpeakRepository(private val api: ThingSpeakApi =
                                ThingSpeakApi.create()) {
-    suspend fun getReadings(channelId: String, readKey: String, results: Int
-    = 20): List<Reading> {
+    suspend fun getReadings(channelId: String, readKey: String, results: Int = 100): List<Reading> {
         val response = api.getFeeds(channelId, readKey.ifBlank { null },
             results)
         return response.feeds.orEmpty().mapNotNull { feed ->

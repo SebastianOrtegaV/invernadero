@@ -53,7 +53,7 @@ fun DashboardScreen(state: UiState, onRefresh: () -> Unit) {
                 Dot(if (state.deviceOnline) SemaforoVerde else Color.Gray)
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text("Invernadero", style =
+                    Text("Mi Invernadero", style =
                         MaterialTheme.typography.titleMedium)
                     Text(
                         if (state.deviceOnline) "En línea" else "Desconectado(sin datos en 2 min)",
@@ -64,7 +64,7 @@ fun DashboardScreen(state: UiState, onRefresh: () -> Unit) {
         }
 // Lecturas actuales
         val latest = state.latest
-        val temp = latest?.temperature
+        val temp = state.latestTemperature
         val threshold = state.settings.tempThreshold
         val semaforo = when {
             temp == null -> Color.Gray
@@ -81,7 +81,7 @@ fun DashboardScreen(state: UiState, onRefresh: () -> Unit) {
             )
             ValueCard(
                 title = "Humedad",
-                value = latest?.humidity?.let { "%.0f %%".format(it) } ?: "--",
+                value = state.latestHumidity?.let { "%.0f %%".format(it) } ?: "--",
                         indicator = null,
                 modifier = Modifier.weight(1f)
             )

@@ -20,7 +20,7 @@ fun ControlScreen(state: UiState, onToggleFan: (Boolean) -> Unit, onToggleWater:
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Actuadores del invernadero", style = MaterialTheme.typography.titleLarge)
         ActuatorCard("Ventilador", state.fanOn, !state.sendingCommand && state.settings.isConfigured, onToggleFan)
-        ActuatorCard("Riego (manguera)", state.waterOn, !state.sendingCommand && state.settings.isConfigured, onToggleWater)
+        ActuatorCard("Riego", state.waterOn, !state.sendingCommand && state.settings.isConfigured, onToggleWater)
     }
 }
 
