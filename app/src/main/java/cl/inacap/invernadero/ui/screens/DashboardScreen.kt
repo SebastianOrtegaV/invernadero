@@ -1,5 +1,7 @@
 package cl.inacap.invernadero.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,8 +32,10 @@ import cl.inacap.invernadero.ui.theme.SemaforoRojo
 import cl.inacap.invernadero.ui.theme.SemaforoVerde
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+@RequiresApi(Build.VERSION_CODES.O)
 private val timeFormat =
     DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault())
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(state: UiState, onRefresh: () -> Unit) {
     Column(
@@ -49,7 +53,7 @@ fun DashboardScreen(state: UiState, onRefresh: () -> Unit) {
                 Dot(if (state.deviceOnline) SemaforoVerde else Color.Gray)
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text("Dispositivo IoT", style =
+                    Text("Invernadero", style =
                         MaterialTheme.typography.titleMedium)
                     Text(
                         if (state.deviceOnline) "En línea" else "Desconectado(sin datos en 2 min)",

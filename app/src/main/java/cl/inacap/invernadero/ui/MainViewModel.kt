@@ -67,12 +67,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val readings = thingSpeak.getReadings(s.sensorChannelId,
                     s.sensorReadKey)
-                val led = thingSpeak.getLedState(s.controlChannelId,
-                    s.controlReadKey)
+                val (fan, water) = thingSpeak.getActuators(s.controlChannelId, s.controlReadKey)
                 _state.update {
                     it.copy(
                         readings = readings,
-                        ledOn = if (it.sendingCommand) it.ledOn else led,
+                        fanOn = if (it.sendingCommand) it.fanOn else fan,
+                        waterOn = if (it.sendingCommand) it.waterOn else water,
                         loading = false,
                         error = null,
                         lastRefresh = Instant.now()
@@ -83,35 +83,32 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
     }
-    fun setLed(on: Boolean) {
-        val s = _state.value.settings
+    fun setFan(on: Boolean) = sendActuators(on, _state.value.waterOn)
+    fun setWater(on: Boolean) = sendActuators(_state.value.fanOn, on)
+
+    private fun sendActuators(fan: Boolean, water: Boolean) {
+        val prev = _state.value
+        val s = prev.settings
         val now = Instant.now()
-        val last = lastCommandAt
-        if (last != null) {
+        lastCommandAt?.let { last ->
             val wait = COMMAND_COOLDOWN_S - Duration.between(last, now).seconds
             if (wait > 0) {
-                _state.update { it.copy(message = "ThingSpeak permite 1 escritura cada 15 s. Espera $wait s.") }
+                _state.update { it.copy(message = "Espera $wait s (límite de ThingSpeak).") }
                 return
             }
         }
         viewModelScope.launch {
-            _state.update { it.copy(sendingCommand = true, ledOn = on,
-                message = null) }
+            _state.update { it.copy(sendingCommand = true, fanOn = fan, waterOn = water, message = null) }
             try {
-                val ok = thingSpeak.sendLedCommand(s.controlWriteKey, on)
-                if (ok) {
-                    lastCommandAt = Instant.now()
-                    _state.update {
-                        it.copy(sendingCommand = false, message = "Comando enviado a ThingSpeak.")
-                    }
-                } else {
-                    _state.update {
-                        it.copy(sendingCommand = false, ledOn = !on, message
-                        = "ThingSpeak rechazó el comando (revisa la Write Key o espera 15 s).")
-                    }
+                val ok = thingSpeak.sendCommand(s.controlWriteKey, fan, water)
+                if (ok) lastCommandAt = Instant.now()
+                _state.update {
+                    if (ok) it.copy(sendingCommand = false, message = "Comando enviado a ThingSpeak.")
+                    else it.copy(sendingCommand = false, fanOn = prev.fanOn, waterOn = prev.waterOn,
+                        message = "ThingSpeak rechazó el comando (revisa la Write Key o espera 15 s).")
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(sendingCommand = false, ledOn = !on,
+                _state.update { it.copy(sendingCommand = false, fanOn = prev.fanOn, waterOn = prev.waterOn,
                     message = "Error de conexión: ${e.message}") }
             }
         }

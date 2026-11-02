@@ -105,7 +105,7 @@ fun IoTApp(vm: MainViewModel = viewModel()) {
         Box(Modifier.padding(padding)) {
             when (tab) {
                 Tab.Inicio -> DashboardScreen(state, onRefresh = vm::refresh)
-                Tab.Control -> ControlScreen(state, onToggleLed = vm::setLed)
+                Tab.Control -> ControlScreen(state, onToggleFan = vm::setFan, onToggleWater = vm::setWater)
                 Tab.Historial -> HistoryScreen(state)
                 Tab.Ajustes -> SettingsScreen(state.settings, onSave =
                     vm::saveSettings)
